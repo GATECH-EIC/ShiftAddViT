@@ -1,0 +1,5 @@
+# ninja log v5
+1	15227	1672307160000000000	/home/hy34/EcoFormer/pvt/deepshift/kernels/cuda/build/temp.linux-x86_64-3.7/shift_cuda.o	8e2e8c2c937ba2a8
+2	48627	1672307193000000000	/home/hy34/EcoFormer/pvt/deepshift/kernels/cuda/build/temp.linux-x86_64-3.7/shift.o	fa7569267cf03b47
+1	14982	1672307213000000000	/home/hy34/EcoFormer/pvt/deepshift/kernels/cuda/build/temp.linux-x86_64-3.7/unoptimized_cuda.o	7970a883f3ec6ae3
+1	41995	1672307240000000000	/home/hy34/EcoFormer/pvt/deepshift/kernels/cuda/build/temp.linux-x86_64-3.7/unoptimized_cuda_kernel.o	1ad8d66ff7544f99
