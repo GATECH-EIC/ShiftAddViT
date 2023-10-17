@@ -1,0 +1,20 @@
+ninja_required_version = 1.3
+cxx = c++
+
+cflags = -pthread -B /home/hy34/anaconda3/compiler_compat -Wl,--sysroot=/ -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -Wstrict-prototypes -fPIC -I/home/hy34/anaconda3/lib/python3.7/site-packages/torch/include -I/home/hy34/anaconda3/lib/python3.7/site-packages/torch/include/torch/csrc/api/include -I/home/hy34/anaconda3/lib/python3.7/site-packages/torch/include/TH -I/home/hy34/anaconda3/lib/python3.7/site-packages/torch/include/THC -I/home/hy34/anaconda3/include/python3.7m -c
+post_cflags = -fopenmp -O3 -DTORCH_API_INCLUDE_EXTENSION_H '-DPYBIND11_COMPILER_TYPE="_gcc"' '-DPYBIND11_STDLIB="_libstdcpp"' '-DPYBIND11_BUILD_ABI="_cxxabi1011"' -DTORCH_EXTENSION_NAME=deepshift_cpu -D_GLIBCXX_USE_CXX11_ABI=0 -std=c++14
+ldflags = 
+
+rule compile
+  command = $cxx -MMD -MF $out.d $cflags -c $in -o $out $post_cflags
+  depfile = $out.d
+  deps = gcc
+
+
+
+build /home/hy34/EcoFormer/pvt/deepshift/kernels/cpu/build/temp.linux-x86_64-3.7/shift_cpu.o: compile /home/hy34/EcoFormer/pvt/deepshift/kernels/cpu/shift_cpu.cpp
+
+
+
+
+

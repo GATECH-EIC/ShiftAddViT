@@ -1,0 +1,3 @@
+# ninja log v5
+1	16633	1672307089000000000	/home/hy34/EcoFormer/pvt/unoptimized/kernels/cuda/build/temp.linux-x86_64-3.7/unoptimized_cuda.o	a806562c0f803d0
+2	41522	1672307113000000000	/home/hy34/EcoFormer/pvt/unoptimized/kernels/cuda/build/temp.linux-x86_64-3.7/unoptimized.o	4c6ff8370c772e38
