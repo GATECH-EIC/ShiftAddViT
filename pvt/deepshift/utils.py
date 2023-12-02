@@ -9,32 +9,16 @@ def round_to_fixed(input, integer_bits=16, fraction_bits=16):
     # TODO: Deal with unsigned tensors where there is no sign bit
     #       which is the case with activations to convolution that 
     #       are usually the output of a Relu layer
-    # integer_bits = 8
-    # input_type = input.dtype
-    # if input_type != torch.float32:
-    #     input = torch.tensor(input, dtype=torch.float32)
     if integer_bits == 1: 
         return torch.sign(input) - 1 
-    # FIXME: symmetric quantization
-    # delta = math.pow(2.0, -(fraction_bits))
-    if input.numel() == 0:
-        max_x = torch.tensor(0, device=input.device, dtype=input.dtype)
-    else:
-        max_x = torch.abs(input).max()
-        # max_x = torch.tensor(2, device=input.device, dtype=input.dtype)
-    # print(max_x)
+    delta = math.pow(2.0, -(fraction_bits))
     bound = math.pow(2.0, integer_bits-1) 
-    min_val = - bound
-    max_val = bound - 1
-    # max_val = 2**integer_bits - 1
-    # min_val = -(2**(integer_bits - 1))
-    delta = 2*max_x/(max_val-min_val)
-    rounded = torch.round(input/delta)
-    rounded = rounded.clamp(min_val, max_val) * delta
-    # if input_type != torch.float32:
-    #     rounded = torch.tensor(rounded, dtype=input_type)
-    # rounded = input
-    return rounded 
+    min_val = - bound 
+    max_val = bound - 1 
+    rounded = torch.floor(input / delta) * delta
+
+    clipped_value = torch.clamp(rounded, min_val, max_val)
+    return clipped_value 
 
 def get_shift_and_sign(x, rounding='deterministic'):
     sign = torch.sign(x)

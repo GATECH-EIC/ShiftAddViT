@@ -102,3 +102,65 @@ python -m torch.distributed.launch --nproc_per_node=1 --master_port=1236 \
     --moe_mlp \
     --eval
 ```
+
+## TVM tune
+
+To speedup model with TVM kernel, you can
+
+```bash
+python main.py \
+    --config configs/pvt_v2/pvt_v2_b0_LinAngular.py \
+    --batch-size 32 \
+    --data-path [path of imagenet] \
+    --data-set IMNET \
+    --resume [path of finetuned ShiftAddViT modelss] \
+    --moe_attn \
+    --moe_mlp \
+    --tvm_tune
+```
+
+## Latency test
+
+To test latency on pytorch:
+```bash
+python main.py \
+    --config configs/pvt_v2/pvt_v2_b0_LinAngular.py \
+    --batch-size 32 \
+    --data-path [path of imagenet] \
+    --data-set IMNET \
+    --resume [path of finetuned ShiftAddViT modelss] \
+    --moe_attn \
+    --moe_mlp \
+    --throughput
+```
+
+To test latency with tuned TVM model (run TVM tune first):
+
+```bash
+python main.py \
+    --config configs/pvt_v2/pvt_v2_b0_LinAngular.py \
+    --batch-size 32 \
+    --data-path [path of imagenet] \
+    --data-set IMNET \
+    --resume [path of finetuned ShiftAddViT modelss] \
+    --moe_attn \
+    --moe_mlp \
+    --tvm_throughput
+```
+
+
+## Energy analyse
+
+To analyse the energy cost of model:
+
+```bash
+python main.py \
+    --config configs/pvt_v2/pvt_v2_b0_LinAngular.py \
+    --batch-size 32 \
+    --data-path [path of imagenet] \
+    --data-set IMNET \
+    --resume [path of finetuned ShiftAddViT modelss] \
+    --moe_attn \
+    --moe_mlp \
+    --cal_energy
+```

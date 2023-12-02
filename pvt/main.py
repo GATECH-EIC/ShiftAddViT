@@ -45,17 +45,20 @@ def throughput(data_loader, model, logger):
     for idx, (images, _) in enumerate(data_loader):
         images = images.cuda(non_blocking=True)
         batch_size = images.shape[0]
-        for i in range(50):
+        for i in range(100):
             model(images)
         torch.cuda.synchronize()
-        logger.info(f"throughput averaged with 30 times")
+        logger.info(f"throughput averaged with 100 times")
         tic1 = time.time()
-        for i in range(30):
+        for i in range(100):
             model(images)
         torch.cuda.synchronize()
         tic2 = time.time()
         logger.info(
-            f"batch_size {batch_size} throughput {30 * batch_size / (tic2 - tic1)}"
+            f"batch_size {batch_size} throughput {100 * batch_size / (tic2 - tic1)}"
+        )
+        logger.info(
+            f"batch_size {batch_size} latency {(tic2 - tic1) / 100 * 1000} ms"
         )
         return
 
@@ -91,6 +94,9 @@ def main():
     # random.seed(seed)
 
     cudnn.benchmark = True
+
+    if args.tvm_tune or args.tvm_throughput:
+        args.batch_size = 1
 
     dataset_train, args.nb_classes = build_dataset(is_train=True, args=args)
     dataset_val, _ = build_dataset(is_train=False, args=args)
