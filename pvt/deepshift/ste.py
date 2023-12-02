@@ -1,6 +1,7 @@
 import torch
 from torch.autograd import Function
 import deepshift.utils as utils
+from params import args
 
 class RoundPowerOf2(Function):
     @staticmethod 
@@ -12,7 +13,10 @@ class RoundPowerOf2(Function):
         return grad_output, None
         
 def round_power_of_2(input, stochastic=False):
-    return RoundPowerOf2.apply(input, stochastic)
+    if args.tvm_tune or args.tvm_throughput:
+        return utils.round_power_of_2(input, stochastic)
+    else:
+        return RoundPowerOf2.apply(input, stochastic)
 
 class RoundFixedPoint(Function):
     @staticmethod 
@@ -24,7 +28,10 @@ class RoundFixedPoint(Function):
         return grad_output, None, None
 
 def round_fixed_point(input, act_integer_bits=16, act_fraction_bits=16):
-    return RoundFixedPoint.apply(input, act_integer_bits, act_fraction_bits)
+    if args.tvm_tune or args.tvm_throughput:
+        return utils.round_to_fixed(input, act_integer_bits, act_fraction_bits)
+    else:
+        return RoundFixedPoint.apply(input, act_integer_bits, act_fraction_bits)
 
 class RoundFunction(Function):
     @staticmethod 
@@ -36,7 +43,10 @@ class RoundFunction(Function):
         return grad_output, None
 
 def round(input, rounding='deterministic'):
-    return RoundFunction.apply(input, rounding)
+    if args.tvm_tune or args.tvm_throughput:
+        return utils.round(input, rounding)
+    else:
+        return RoundFunction.apply(input, rounding)
 
 class SignFunction(Function):
     @staticmethod 
@@ -48,7 +58,10 @@ class SignFunction(Function):
         return grad_output
 
 def sign(input):
-    return SignFunction.apply(input)
+    if args.tvm_tune or args.tvm_throughput:
+        return torch.sign(input)
+    else:
+        return SignFunction.apply(input)
 
 class ClampFunction(Function):
     @staticmethod 
@@ -60,7 +73,10 @@ class ClampFunction(Function):
         return grad_output, None, None
 
 def clamp(input, min, max):
-    return ClampFunction.apply(input, min, max)
+    if args.tvm_tune or args.tvm_throughput:
+        return torch.clamp(input, min, max)
+    else:
+        return ClampFunction.apply(input, min, max)
 
 class ClampAbsFunction(Function):
     @staticmethod
@@ -79,7 +95,17 @@ class ClampAbsFunction(Function):
         return grad_output, None, None
 
 def clampabs(input, min, max):
-    return ClampAbsFunction.apply(input, min, max)
+    if args.tvm_tune or args.tvm_throughput:
+        assert(min >= 0 and max >=0)
+
+        input[input > max] = max
+        input[input < -max] = -max
+
+        input[(input > torch.zeros_like(input)) & (input < min)] = min
+        input[(input < torch.zeros_like(input)) & (input > -min)] = -min
+        return input 
+    else:
+        return ClampAbsFunction.apply(input, min, max)
 
 class LogFunction(Function):
     @staticmethod 
@@ -91,7 +117,10 @@ class LogFunction(Function):
         return grad_output
 
 def log(input):
-    return LogFunction.apply(input)
+    if args.tvm_tune or args.tvm_throughput:
+        return torch.log(input)
+    else:
+        return LogFunction.apply(input)
 
 class UnsymmetricGradMulFunction(Function):
     @staticmethod 
@@ -105,7 +134,10 @@ class UnsymmetricGradMulFunction(Function):
         return grad_output*input2, grad_output
 
 def unsym_grad_mul(input1, input2):
-    return UnsymmetricGradMulFunction.apply(input1, input2)
+    if args.tvm_tune or args.tvm_throughput:
+        return torch.mul(input1, input2)
+    else:
+        return UnsymmetricGradMulFunction.apply(input1, input2)
 
 
 class AbsFunction(Function):
@@ -118,4 +150,7 @@ class AbsFunction(Function):
         return grad_output
 
 def abs(input):
-    return AbsFunction.apply(input)
+    if args.tvm_tune or args.tvm_throughput:
+        return torch.abs(input)
+    else:
+        return AbsFunction.apply(input)

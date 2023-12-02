@@ -33,6 +33,8 @@ from gpu_mem_track import MemTracker
 from unoptimized.convert import convert_to_unoptimized
 # from accelerate import Accelerator
 
+from tvm_func import tvm_tune, tvm_throughput
+
 # os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 # os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
 @torch.no_grad()
@@ -447,6 +449,14 @@ def main():
             else:
                 model.set_retrain_resume()
 
+
+    if args.tvm_tune:
+        tvm_tune(model, data_loader_val)
+        return
+
+    if args.tvm_throughput:
+        tvm_throughput(model, data_loader_val)
+        return
 
     if args.throughput:
         throughput(data_loader_val, model, logger)

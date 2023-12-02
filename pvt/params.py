@@ -345,6 +345,10 @@ parser.add_argument(
 parser.add_argument("--attn_type", default="sra", type=str, help="attention type")
 parser.add_argument("--nbits", default=16, type=int, help="number of bits")
 # parser = argparse.ArgumentParser('DeiT training and evaluation script', add_help=False)
+
+parser.add_argument("--tvm_tune", action="store_true", help="speed up model with TVM")
+parser.add_argument("--tvm_throughput", action="store_true", help="test the thoughtput using TVM")
+
 args = parser.parse_args()
 
 cfg = mmcv.Config.fromfile(args.config)
