@@ -19,6 +19,7 @@ from performer import (
     EcoformerQuant
 )
 from fmoe_new import SparseDispatcher, NaiveGate, NoisyGate, NoisyGate_V2
+from matkernel import MatMul, MatAdd
 
 __all__ = ["pvt_tiny", "pvt_small", "pvt_medium", "pvt_large"]
 
@@ -215,15 +216,6 @@ class Mlp(nn.Module):
         return x
 
 
-# if use Q @ K, FLOPs caclulation could be wrong
-class MatMul(nn.Module):
-    def __init__(self):
-        super().__init__()
-    def forward(self, a, b):
-        out = a @ b
-        return out
-
-
 class LinAngularAttention_binary(nn.Module):
     def __init__(
         self,
@@ -260,8 +252,8 @@ class LinAngularAttention_binary(nn.Module):
             self.proj = nn.Linear(dim, dim)
         self.proj_drop = nn.Dropout(proj_drop)
 
-        self.kq_matmul = MatMul()
-        self.kqv_matmul = MatMul()
+        self.kq_matmul = MatAdd()
+        self.kqv_matmul = MatAdd()
         if self.sparse_reg:
             self.qk_matmul = MatMul()
             self.sv_matmul = MatMul()
@@ -394,8 +386,8 @@ class LinAngularAttention_ksh(nn.Module):
             self.proj = nn.Linear(dim, dim)
             self.proj_drop = nn.Dropout(proj_drop)
 
-        self.kq_matmul = MatMul()
-        self.kqv_matmul = MatMul()
+        self.kq_matmul = MatAdd()
+        self.kqv_matmul = MatAdd()
         if self.sparse_reg:
             self.qk_matmul = MatMul()
             self.sv_matmul = MatMul()

@@ -348,6 +348,8 @@ parser.add_argument("--nbits", default=16, type=int, help="number of bits")
 
 parser.add_argument("--tvm_tune", action="store_true", help="speed up model with TVM")
 parser.add_argument("--tvm_throughput", action="store_true", help="test the thoughtput using TVM")
+parser.add_argument("--cal_energy", action="store_true", help="test the thoughtput using TVM")
+
 
 args = parser.parse_args()
 

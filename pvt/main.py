@@ -34,6 +34,7 @@ from unoptimized.convert import convert_to_unoptimized
 # from accelerate import Accelerator
 
 from tvm_func import tvm_tune, tvm_throughput
+from cal_energy import cal_modelEnergy
 
 # os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 # os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
@@ -461,7 +462,11 @@ def main():
     if args.throughput:
         throughput(data_loader_val, model, logger)
         return
-
+    
+    if args.cal_energy:
+        cal_modelEnergy(model, data_loader_val)
+        return
+    
     if args.eval:
         test_stats = evaluate(data_loader_val, model, device)
         logger.info(
