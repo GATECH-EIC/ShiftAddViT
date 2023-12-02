@@ -36,15 +36,16 @@ def matmask(BATCH, NUM, SQUEEZE, INdim, MASKdim):
 def matmul(BATCH, NUM, SQUEEZE, INdim, MASKdim):
     INPUT = te.placeholder((BATCH, NUM,SQUEEZE,INdim), name="INPUT", dtype="float32")
     MASK = te.placeholder((BATCH, NUM,SQUEEZE,MASKdim), name="MASK", dtype="float32")
+    WEIGHT = te.placeholder((BATCH, NUM, SQUEEZE,MASKdim), name="WEIGHT", dtype="float32")
     k = te.reduce_axis((0, SQUEEZE), name="k")
     matmul = te.compute(
         (BATCH, NUM,MASKdim,INdim),
-        lambda a, i, m, n : te.sum(MASK[a, i, k, m] * INPUT[a, i, k, n] ,
+        lambda a, i, m, n : te.sum(WEIGHT[a, i, k, m] * MASK[a, i, k, m] * INPUT[a, i, k, n] ,
                                 axis=k),
         name="matmul",
-        attrs={"layout_free_placeholders": [MASK]}, 
+        attrs={"layout_free_placeholders": [MASK,WEIGHT]},  # 启用张量自动布局转换
     )
-    return [INPUT, MASK, matmul]
+    return [INPUT, MASK,WEIGHT, matmul]
 
 
 
@@ -57,12 +58,12 @@ for eachSize in shapeList:
     MASK = eachSize[4]
 
     task = tvm.auto_scheduler.SearchTask(func=matmask, args=(BATCH, NUM, SQUEEZE, IN, MASK), target=target) 
-    log_file = "./result/matmask.json"
+    log_file = f"./result/matmask_{BATCH}_{NUM}_{SQUEEZE}_{IN}_{MASK}.json"
     sch, args = task.apply_best(log_file)
     matmask_cal = tvm.build(sch, args, target = target)
 
     task = tvm.auto_scheduler.SearchTask(func=matmul, args=(BATCH, NUM, SQUEEZE, IN, MASK), target=target) 
-    log_file = "./result/matmul.json"
+    log_file = f"./result/matmul_{BATCH}_{NUM}_{SQUEEZE}_{IN}_{MASK}.json"
     sch, args = task.apply_best(log_file)
     matmul_cal = tvm.build(sch, args, target = target)
 
@@ -96,24 +97,24 @@ for eachSize in shapeList:
     total_time = 0
     for i in range(REPEAT):
         time1 = time.time()
-        out_torch = torch.einsum("abnd,abne->abde", mask_torch, input_torch)
+        out_torch = torch.einsum("abnd,abne->abde", mask_torch * weight_torch, input_torch)
         torch.cuda.synchronize()
         time2 = time.time()
         total_time += time2 - time1
-    print(f"pytorch einsum calculate time test (repeat:{REPEAT}): {(total_time)/10} ms")
+    print(f"pytorch einsum calculate time test (repeat:{REPEAT}): {(total_time) * 1000 / REPEAT} ms")
 
     total_time = 0
     for i in range(REPEAT):
         time1 = time.time()
-        out_torch = mask_torch.transpose(-2, -1) @ input_torch
+        out_torch = (mask_torch * weight_torch).transpose(-2, -1) @ input_torch
         torch.cuda.synchronize()
         time2 = time.time()
         total_time += time2 - time1
-    print(f"pytorch matmul calculate time test (repeat:{REPEAT}): {(total_time)/10} ms")
+    print(f"pytorch matmul calculate time test (repeat:{REPEAT}): {(total_time) * 1000 / REPEAT} ms")
 
 
     evaluator = matmul_cal.time_evaluator(matmul_cal.entry_name, dev, repeat=3, min_repeat_ms=500)
-    total_time = evaluator(input_tvm, mask_tvm, out_tvm).mean
+    total_time = evaluator(input_tvm, mask_tvm, weight_tvm, out_tvm).mean
     print(f"tvm matmul calculate time test (repeat:{REPEAT}): {total_time*1000} ms")
 
     evaluator = matmask_cal.time_evaluator(matmask_cal.entry_name, dev, repeat=3, min_repeat_ms=500)

@@ -1,3 +1,5 @@
+import os
+
 import tvm
 from tvm import te
 import tvm.testing
@@ -32,15 +34,16 @@ def matmask(BATCH, NUM, SQUEEZE, INdim, MASKdim):
 def matmul(BATCH, NUM, SQUEEZE, INdim, MASKdim):
     INPUT = te.placeholder((BATCH, NUM,SQUEEZE,INdim), name="INPUT", dtype="float32")
     MASK = te.placeholder((BATCH, NUM,SQUEEZE,MASKdim), name="MASK", dtype="float32")
+    WEIGHT = te.placeholder((BATCH, NUM, SQUEEZE,MASKdim), name="WEIGHT", dtype="float32")
     k = te.reduce_axis((0, SQUEEZE), name="k")
     matmul = te.compute(
         (BATCH, NUM,MASKdim,INdim),
-        lambda a, i, m, n : te.sum(MASK[a, i, k, m] * INPUT[a, i, k, n] ,
+        lambda a, i, m, n : te.sum(WEIGHT[a, i, k, m] * MASK[a, i, k, m] * INPUT[a, i, k, n] ,
                                 axis=k),
         name="matmul",
-        attrs={"layout_free_placeholders": [MASK]}, 
+        attrs={"layout_free_placeholders": [MASK,WEIGHT]},  # 启用张量自动布局转换
     )
-    return [INPUT, MASK, matmul]
+    return [INPUT, MASK,WEIGHT, matmul]
 
 os.makedirs("./result", exist_ok=True)
 for eachSize in shapeList:
@@ -63,7 +66,7 @@ for eachSize in shapeList:
     print("Computational DAG:")
     print(task.compute_dag)
 
-    log_file = "./result/matmask.json"  
+    log_file = f"./result/matmask_{BATCH}_{NUM}_{SQUEEZE}_{IN}_{MASK}.json"  
     tune_option = auto_scheduler.TuningOptions(
         num_measure_trials=100000, 
         early_stopping = 500,     
@@ -83,7 +86,7 @@ for eachSize in shapeList:
     print("Computational DAG:")
     print(task.compute_dag)
 
-    log_file = "./result/matmul.json" 
+    log_file = f"./result/matmul_{BATCH}_{NUM}_{SQUEEZE}_{IN}_{MASK}.json" 
     tune_option = auto_scheduler.TuningOptions(
         num_measure_trials=100000, 
         early_stopping = 500,     

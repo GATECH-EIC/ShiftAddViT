@@ -76,7 +76,7 @@ for eachSize in shapeList:
     M = eachSize[1]
     K = eachSize[2]
     N = eachSize[3]
-    print(f" ===> start opitimize matshift. shape: input - [{A},{M},{K}], weight - [{N},{K}]")
+    print(f" ===> start opitimize shape: input - [{A},{M},{K}], weight - [{N},{K}]")
 
     # ================== matshift ==================
 
@@ -86,7 +86,7 @@ for eachSize in shapeList:
     print(task.compute_dag)
 
     measure_ctx = auto_scheduler.LocalRPCMeasureContext(min_repeat_ms=3)
-    log_file = "./result/matshift.json"
+    log_file = f"./result/matshift_{A}_{M}_{K}_{N}.json"
     tune_option = auto_scheduler.TuningOptions(
         num_measure_trials=100000,
         early_stopping = 500,
@@ -105,7 +105,7 @@ for eachSize in shapeList:
     print(task.compute_dag)
 
     measure_ctx = auto_scheduler.LocalRPCMeasureContext(min_repeat_ms=3)
-    log_file = "./result/matshift_fake.json"
+    log_file = f"./result/matshift_fake_{A}_{M}_{K}_{N}.json"
     tune_option = auto_scheduler.TuningOptions(
         num_measure_trials=100000,
         early_stopping = 500,
@@ -125,7 +125,7 @@ for eachSize in shapeList:
     print(task.compute_dag)
 
     measure_ctx = auto_scheduler.LocalRPCMeasureContext(min_repeat_ms=3)
-    log_file = "./result/matmul.json"
+    log_file = f"./result/matmul_{A}_{M}_{K}_{N}.json"
     tune_option = auto_scheduler.TuningOptions(
         num_measure_trials=100000,
         early_stopping = 500,

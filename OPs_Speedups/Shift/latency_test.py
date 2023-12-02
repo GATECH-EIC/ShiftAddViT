@@ -81,19 +81,19 @@ for eachSize in shapeList:
 
     # build matshift callable function
     task = auto_scheduler.SearchTask(func=matshift, args=(A , M , K , N), target=target)
-    log_file = "./result/matshift.json"
+    log_file = F"./result/matshift_{A}_{M}_{K}_{N}.json"
     sch, args = task.apply_best(log_file)
     matshift_cal = tvm.build(sch, args, target = target)
 
     # build matmul callable function
     task = auto_scheduler.SearchTask(func=matmul, args=(A , M , K , N), target=target)
-    log_file = "./result/matmul.json"
+    log_file = F"./result/matmul_{A}_{M}_{K}_{N}.json"
     sch, args = task.apply_best(log_file)
     matmul_cal = tvm.build(sch, args, target = target)
 
     # build matshift_fake callable function
     task = auto_scheduler.SearchTask(func=matshift_fake, args=(A , M , K , N), target=target)
-    log_file = "./result/matshift_fake.json"
+    log_file = F"./result/matshift_fake_{A}_{M}_{K}_{N}.json"
     sch, args = task.apply_best(log_file)
     matshift_fake_cal = tvm.build(sch, args, target = target)
 
@@ -120,7 +120,7 @@ for eachSize in shapeList:
     mul_b_tvm = tvm.nd.array(b_torch.to("cpu"), device=dev)
     mul_c_tvm = tvm.nd.array(c_torch.to("cpu"), device=dev)
     mul_out_tvm = tvm.nd.empty(out_np.shape, device=dev, dtype='float32')
-    matmul_cal(mul_a_tvm, mul_b_tvm,mul_c_tvm, mul_out_tvm)
+    matmul_cal(mul_a_tvm, mul_b_tvm, mul_out_tvm)
 
 
     REPEAT = 10000  
@@ -136,7 +136,7 @@ for eachSize in shapeList:
 
     # tvm matmul calculate time test
     evaluator = matmul_cal.time_evaluator(matmul_cal.entry_name, dev, min_repeat_ms = 2000)
-    print(f"tvm matmul calculate time test (repeat:{REPEAT}): {evaluator(mul_a_tvm, mul_b_tvm,mul_c_tvm, mul_out_tvm).mean*1000} ms")
+    print(f"tvm matmul calculate time test (repeat:{REPEAT}): {evaluator(mul_a_tvm, mul_b_tvm, mul_out_tvm).mean*1000} ms")
 
     evaluator = matshift_fake_cal.time_evaluator(matshift_fake_cal.entry_name, dev, min_repeat_ms = 2000)
     print(f"tvm matshift_fake calculate time test (repeat:{REPEAT}): {evaluator(mul_a_tvm, mul_b_tvm, mul_c_tvm, mul_out_tvm).mean*1000} ms")
@@ -151,4 +151,4 @@ for eachSize in shapeList:
         torch.cuda.synchronize()
         tic2 = time.time()
         timeAll += tic2 - tic1
-    print(f"pytorch matmul calculate time test (repeat:{REPEAT}): {(timeAll)/10} ms")
+    print(f"pytorch matmul calculate time test (repeat:{REPEAT}): {(timeAll) / REPEAT * 1000} ms")
