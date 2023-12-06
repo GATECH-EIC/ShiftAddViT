@@ -13,3 +13,8 @@ Accepted by [**NeurIPS 2023**](https://neurips.cc/). More Info:
 
 * We have made the entire code for PVT models publicly available, encompassing training, evaluation, TVM compilation of the entire model, and subsequent throughput measurements and comparisons. For additional information, refer to the `./pvt` directory.
 * We have also released the unit test for our MatAdd and MatShift kernels constructed with TVM. This test enables you to replicate the comparison results illustrated in Figures 4 and 5 of our paper. Please refer to the `./Ops_Speedups` folder for more information.
+
+**ToDos**
+
+* Publish the pre-trained checkpoints and provide the corresponding expected TVM output in the form of a `.json` file for replicating our results.
+* Upload the presentation to Youtube and share the link.
